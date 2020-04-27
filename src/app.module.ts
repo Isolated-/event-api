@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { HookModule } from './hook/hook.module';
+import { EventModule, EVENT_QUEUE_TOKEN } from './event/event.module';
 import configuration from './config/configuration';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -19,7 +21,21 @@ import configuration from './config/configuration';
       },
       inject: [ConfigService],
     }),
+    BullModule.registerQueueAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        return {
+          name: EVENT_QUEUE_TOKEN,
+          redis: {
+            host: config.get('IGNITE_REDIS_HOST'),
+            port: config.get('IGNITE_REDIS_PORT'),
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
     HookModule,
+    EventModule,
   ],
 })
 export class AppModule {}

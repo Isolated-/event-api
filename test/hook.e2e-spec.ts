@@ -4,13 +4,18 @@ import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { fakeHook } from '../src/hook/test/util/fakeHook.util';
 import { TransformInterceptor } from '../src/transform.interceptor';
+import { BullModule } from '@nestjs/bull';
+import { EVENT_QUEUE_TOKEN } from '../src/event/event.module';
 
 describe('HookController (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        AppModule,
+        BullModule.registerQueue({ name: EVENT_QUEUE_TOKEN }),
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
